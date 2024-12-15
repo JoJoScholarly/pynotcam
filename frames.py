@@ -7,7 +7,7 @@ from sys import argv
 
 
 def twosComplements( frames ):
-    """Iterate sub-frames, convert with two's complement."""
+    """Iterate sub-frames, convert with two's complement. Test."""
     for i in range( frames.shape[0] ):
         frames[i] = twosComplement( frames[i] )
     return frames
