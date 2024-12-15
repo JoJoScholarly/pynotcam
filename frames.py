@@ -5,7 +5,9 @@ import astropy.io.fits as fits
 from numba import njit, prange
 from sys import argv
 
+
 def twosComplements( frames ):
+    """Iterate sub-frames, convert with two's complement."""
     for i in range( frames.shape[0] ):
         frames[i] = twosComplement( frames[i] )
     return frames
