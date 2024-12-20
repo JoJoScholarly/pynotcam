@@ -37,13 +37,17 @@ if __name__ == "__main__":
     filename = argv[1]
 
     with fits.open( filename ) as hdul:
-        hdr = hdul[0].header
-        resetLevel = hdul[-1].data
+        hdr = hdul[0].header # Get the primary header, no data in hdu[0] in case of NOTCam
+        resetLevel = hdul[-1].data # Reset level is stored to las hdu
 
-        N = len(hdul) - 2 - 1 # Only sub-reads
+        N = len(hdul) - 2 - 1# Only sub-reads
         t = 43.0 # This should be scraped from keywords, best calc from timestamp
         
         frames = []
+        # Skip
+        # hdu[0] = (no data)
+        # hdu[1] = (controller linear fit)
+        # hdu[-1] =  (reset level)
         for i in np.arange(2, len(hdul)-1):
             frames.append(hdul[i].data)
         frames = np.array(frames)
@@ -53,10 +57,10 @@ if __name__ == "__main__":
 
         out_file_name = filename.split('.')[0] + '_linFit.fits'
 
-        hdus = [fits.PrimaryHDU( lbNt )]
+        hdusOut = [fits.PrimaryHDU( lbNt )]
         for frame in frames:
-            hdus.append( fits.ImageHDU( frame ))
-        hdus.append( fits.ImageHDU( resetLevel ))
+            hdusOut.append( fits.ImageHDU( frame ))
+        hdusOut.append( fits.ImageHDU( resetLevel ))
 
-        hdul = fits.HDUList(hdus)
+        hdul = fits.HDUList(hdusOut)
         hdul.writeto(out_file_name, overwrite=True)
