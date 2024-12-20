@@ -7,7 +7,7 @@ from sys import argv
 
 
 def twosComplements( frames ):
-    """Iterate sub-frames, convert with two's complement. Test."""
+    """Iterate sub-frames, convert with two's complement."""
     for i in range( frames.shape[0] ):
         frames[i] = twosComplement( frames[i] )
     return frames
@@ -40,11 +40,11 @@ if __name__ == "__main__":
         hdr = hdul[0].header
         resetLevel = hdul[-1].data
 
-        N = len(hdul) - 2 # Only sub-reads
-        t = 5.0 # This should be scraped from keywords, best calc from timestamp
+        N = len(hdul) - 2 - 1 # Only sub-reads
+        t = 43.0 # This should be scraped from keywords, best calc from timestamp
         
         frames = []
-        for i in range(1,len(hdul)-1):
+        for i in np.arange(2, len(hdul)-1):
             frames.append(hdul[i].data)
         frames = np.array(frames)
 
