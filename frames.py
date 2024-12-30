@@ -6,22 +6,6 @@ from numba import njit, prange
 from sys import argv
 
 
-def twosComplements( frames ):
-    """Iterate sub-frames, convert with two's complement."""
-    for i in range( frames.shape[0] ):
-        frames[i] = twosComplement( frames[i] )
-    return frames
-
-
-@njit( parallel=True )
-def twosComplement( frame ):
-    for i in prange( frame.shape[0] ):
-        for j in range( frame.shape[1] ):
-            if frame[i,j] > 62000:
-                frame[i,j] = ( 65536 - frame[i,j] )
-    return frame
-
-
 @njit( parallel=True )
 def linFit( frames, N, t ):
     x = np.linspace(0, N*t, N)
@@ -49,10 +33,9 @@ if __name__ == "__main__":
         # hdu[1] = (controller linear fit)
         # hdu[-1] =  (reset level)
         for i in np.arange(2, len(hdul)-1):
-            frames.append(hdul[i].data)
+            frames.append(hdul[i].data.astype(np.int16))
         frames = np.array(frames)
 
-        frames = twosComplements( frames )
         lbNt = linFit( frames, N, t )
 
         out_file_name = filename.split('.')[0] + '_linFit.fits'
