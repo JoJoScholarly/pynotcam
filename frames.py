@@ -17,6 +17,24 @@ def linFit( frames, N, t ):
     return lb*N*t
 
 
+def exptime( expModeKeyword ):
+    """Extract exposure time from readmode fits header keyword. NOTCam has to read modes:
+       1.) reset-read-read (rrr)
+       2.) ramp-sample (rs) with n reads (n_max=14)
+       For rrr, the total exposure time consist of time interval between the two reads (1 x exptime). 
+       For rs, the total exposure time consist of n times the time interval between two reads(n x exptime)
+       This function return tuple with where first element is exposure time, and second number of subexposures.
+    """
+    if 'frames' in expModeKeyword:
+        t = float(expModeKeyword.split(' ')[1])
+        N = int(expModeKeyword.split(' ')[2]) 
+    else:
+        print('Not exposed with NOTCam frame or dframe command.')
+        t = 0
+        N = 0
+    return ( t, N )
+
+
 if __name__ == "__main__":
     filename = argv[1]
 
@@ -24,8 +42,7 @@ if __name__ == "__main__":
         hdr = hdul[0].header # Get the primary header, no data in hdu[0] in case of NOTCam
         resetLevel = hdul[-1].data # Reset level is stored to las hdu
 
-        N = len(hdul) - 2 - 1# Only sub-reads
-        t = 43.0 # This should be scraped from keywords, best calc from timestamp
+        t, N = exptime( hdr['EXPMODE'] )
         
         frames = []
         # Skip
