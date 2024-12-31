@@ -8,7 +8,7 @@ from sys import argv
 
 @njit( parallel=True )
 def linFit( frames, N, t ):
-    x = np.linspace(0, N*t, N)
+    x = np.linspace(t, N*t, N)
     lb = np.zeros( (1024, 1024) )
     for i in prange(0, frames.shape[1]):
         for j in range(0, frames.shape[2]):
