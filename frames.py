@@ -42,6 +42,10 @@ if __name__ == "__main__":
         hdr = hdul[0].header # Get the primary header, no data in hdu[0] in case of NOTCam
         resetLevel = hdul[-1].data # Reset level is stored to las hdu
 
+        headers = []
+        for hdu in hdul:
+            headers.append( hdu.header )
+
         t, N = exptime( hdr['EXPMODE'] )
         
         frames = []
@@ -57,10 +61,14 @@ if __name__ == "__main__":
 
         out_file_name = filename.split('.')[0] + '_linFit.fits'
 
-        hdusOut = [fits.PrimaryHDU( lbNt )]
-        for frame in frames:
-            hdusOut.append( fits.ImageHDU( frame ))
-        hdusOut.append( fits.ImageHDU( resetLevel ))
+        hdusOut = [fits.PrimaryHDU( header=headers[0] )] # Like the original, no data in primary HDU
+        hdusOut.append( fits.ImageHDU( lbNt, header=headers[1] )) # New linear fit
+        
+        # Add sub-reads and attach headers
+        for i in range(0, len(frames)):
+            hdusOut.append( fits.ImageHDU( frames[i], header=headers[i+2] ))
+        
+        hdusOut.append( fits.ImageHDU( resetLevel, header=headers[-1] ))
 
         hdul = fits.HDUList(hdusOut)
         hdul.writeto(out_file_name, overwrite=True)
