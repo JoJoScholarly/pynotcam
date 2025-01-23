@@ -7,13 +7,18 @@ from sys import argv
 
 
 @njit( parallel=True )
-def linFit( frames, N, t ):
-    x = np.linspace(t, N*t, N)
+def linFit( frames, N, t, ignore=1 ):
+    ignore = ignore # Don't include to first reads in the fit.
+    frames = frames[ignore:,:,:]
+    x = np.linspace(t+t*ignore, N*t, (N-ignore))
+    
     lb = np.zeros( (1024, 1024) )
     for i in prange(0, frames.shape[1]):
         for j in range(0, frames.shape[2]):
             y = frames[:, i, j]
-            lb[i,j] = (N*(x*y).sum() - x.sum()*y.sum()) / (N*(x*x).sum() - x.sum()*x.sum())
+            #weights = ((10**0.5)**2 + (np.nan_to_num( frames[:,i,j]**(-0.5), nan=1e-9, posinf=1e-9, neginf=1e-9 ))**2)**0.5
+            #lb[i,j] = np.polyfit(x,y,1,w=weights)[0]
+            lb[i,j] = ((N-ignore)*(x*y).sum() - x.sum()*y.sum()) / ((N-ignore)*(x*x).sum() - x.sum()*x.sum())
     return lb*N*t
 
 
@@ -54,7 +59,7 @@ if __name__ == "__main__":
         # hdu[1] = (controller linear fit)
         # hdu[-1] =  (reset level)
         for i in np.arange(2, len(hdul)-1):
-            frames.append(hdul[i].data.astype(np.int16))
+            frames.append(hdul[i].data.astype(np.int32))
         frames = np.array(frames)
 
         lbNt = linFit( frames, N, t )
